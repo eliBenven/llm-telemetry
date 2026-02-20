@@ -1,0 +1,13 @@
+{
+  "name": "llm-telemetry",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "lint": "echo 'TODO: add eslint/biome'",
+    "test": "echo 'TODO: add tests'",
+    "build": "echo 'TODO: add builds'"
+  }
+}

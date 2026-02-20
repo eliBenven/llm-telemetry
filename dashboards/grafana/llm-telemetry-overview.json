@@ -1,0 +1,19 @@
+{
+  "title": "LLM Telemetry Overview (stub)",
+  "tags": ["llm", "otel"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "text",
+      "title": "Dashboard stub",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 6},
+      "options": {
+        "content": "This is a placeholder dashboard. Next: add PromQL panels for latency, token usage, cost, errors by provider/model/feature.",
+        "mode": "markdown"
+      }
+    }
+  ]
+}
