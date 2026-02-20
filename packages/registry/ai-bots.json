@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "bots": [
+    {"name": "gptbot", "match": [{"type": "ua_contains", "value": "GPTBot"}]},
+    {"name": "openai-user", "match": [{"type": "ua_contains", "value": "OpenAI"}]},
+    {"name": "claudebot", "match": [{"type": "ua_contains", "value": "ClaudeBot"}]},
+    {"name": "perplexitybot", "match": [{"type": "ua_contains", "value": "PerplexityBot"}]},
+    {"name": "google-extended", "match": [{"type": "ua_contains", "value": "Google-Extended"}]}
+  ]
+}

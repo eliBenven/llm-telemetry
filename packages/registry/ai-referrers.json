@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sources": [
+    {"name": "chatgpt", "match": [{"type": "domain", "value": "chat.openai.com"}, {"type": "domain", "value": "chatgpt.com"}]},
+    {"name": "perplexity", "match": [{"type": "domain", "value": "www.perplexity.ai"}]},
+    {"name": "gemini", "match": [{"type": "domain", "value": "gemini.google.com"}]},
+    {"name": "copilot", "match": [{"type": "domain", "value": "copilot.microsoft.com"}]},
+    {"name": "claude", "match": [{"type": "domain", "value": "claude.ai"}]}
+  ]
+}

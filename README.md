@@ -1,52 +1,49 @@
 # llm-telemetry
 
-**Goal:** make *any* product feature that uses AI observable — consistently — across providers, languages, and deployment models.
+**This project tracks AI traffic + analytics for any site.**
 
-This repo provides:
-- **A vendor-neutral telemetry spec** (attributes + event names) for LLM/AI workloads
-- **SDKs** that emit **OpenTelemetry** traces/metrics/logs
-- **Collector + dashboard recipes** (Grafana/Tempo/Loki/Prometheus, Jaeger, etc.)
+That means **both**:
+1) **AI crawlers/bots** hitting your site (GPTBot, ClaudeBot, PerplexityBot, etc.)
+2) **Human visits + conversions referred by AI tools** (ChatGPT, Perplexity, Gemini, Copilot, Claude, etc.)
 
-## What “AI analytics” means here
-We track the stuff you actually need to run AI in production:
-- latency (end-to-end + model time)
-- tokens in/out (and derived cost)
-- model/provider/region
-- retries, fallbacks, streaming vs non-streaming
-- errors (rate limits, timeouts, content filter, tool failures)
-- feature name + user/session identifiers (hashed)
-- optional redaction-safe prompt/response capture (OFF by default)
+The goal is simple: *answer “What did AI send me?” and “What did AI crawl?” with hard numbers.*
 
-## Success conditions (repo-level)
-If you can do all of the following, the project is succeeding:
-1. Drop in the **web snippet** or **server SDK** and see traces + metrics within 5 minutes.
-2. Switch providers (OpenAI → Anthropic → Gemini → local) without changing your dashboards.
-3. Correlate an AI call with a user action (page view / API request) via trace IDs.
-4. Run self-hosted (local dev) and production (OTLP to any backend).
+## What you get
+### AI Referrals (humans)
+- drop-in JS snippet (or npm package)
+- classifies referrers + UTMs
+- captures pageviews + conversions
+- exports to PostHog / GA4 / Segment / webhook / your DB
 
-## Quickstart
-### 1) Run local observability stack
-```bash
-docker compose -f collector-config/docker-compose.yml up
-```
+### AI Crawlers (bots)
+- log parsers for common platforms (nginx/apache/CloudFront/Vercel/etc.)
+- bot/user-agent classification
+- page hit counts, cadence, status codes
+- export to BigQuery/Snowflake/ClickHouse/CSV
 
-### 2) Instrument your app
-- Node/Next.js: `packages/sdk-node`
-- Browser: `packages/sdk-web`
+## Reality / constraints (we’re honest about attribution)
+- Some AI tools strip referrers. For high-confidence attribution, we support:
+  - UTM conventions
+  - optional redirect/shortlink endpoint
+  - server-side log correlation
 
-### 3) View
-- Grafana: http://localhost:3000
-- Tempo: http://localhost:3200
+## Success conditions (v1)
+You can do all of the following:
+1. Install in <10 minutes on any site (static/Next.js/Webflow/Shopify).
+2. See a dashboard with:
+   - AI referrals by source → landing pages → conversions
+   - AI crawler hits by bot → pages → status codes
+3. Export data to a destination you already use (PostHog/GA4/BigQuery/CSV).
 
-## Packages
-- `packages/semantic-conventions` — the attribute/event spec (source of truth)
-- `packages/sdk-core` — shared helpers (token counting hooks, cost tables, redaction)
-- `packages/sdk-web` — browser instrumentation (fetch/XHR + custom spans)
-- `packages/sdk-node` — Node/edge/server instrumentation + provider adapters
-- `packages/collector-config` — OTEL collector + docker compose + dashboards
+## Quickstart (local)
+(TODO) we’ll ship a one-command demo that generates sample traffic and shows dashboards.
 
-## Roadmap
-See **GitHub Issues** (we keep milestones per language + provider).
+## Repo layout (planned)
+- `packages/referral-snippet` — JS snippet + classification
+- `packages/server-collector` — API endpoint for ingest + redirect/shortlinks (optional)
+- `packages/log-parser` — parse + classify from server/CDN logs
+- `packages/registry` — maintained registry of AI bots + AI referrer patterns
+- `examples/*` — Next.js + static examples
 
 ## License
 MIT
