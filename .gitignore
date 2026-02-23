@@ -3,3 +3,7 @@ node_modules
 .env
 .env.*
 dist
+
+# Allow referral-snippet dist (committed for CDN hosting)
+!packages/referral-snippet/dist
+!packages/referral-snippet/dist/snippet.js

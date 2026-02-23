@@ -1,0 +1,22 @@
+{
+  "name": "@llm-telemetry/registry",
+  "version": "0.1.0",
+  "description": "AI bot and referrer classification registry",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "ai-bots.json",
+    "ai-referrers.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  },
+  "license": "MIT"
+}

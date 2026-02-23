@@ -6,8 +6,16 @@
     "examples/*"
   ],
   "scripts": {
+    "build": "npm run build:registry && npm run build:snippet && npm run build:log-parser && npm run build:server-collector",
+    "build:registry": "npm run build -w packages/registry",
+    "build:snippet": "npm run build -w packages/referral-snippet",
+    "build:log-parser": "npm run build -w packages/log-parser",
+    "build:server-collector": "npm run build -w packages/server-collector",
+    "test": "npm run test:registry && npm run test:log-parser && npm run test:server-collector",
+    "test:registry": "npm test -w packages/registry",
+    "test:log-parser": "npm test -w packages/log-parser",
+    "test:server-collector": "npm test -w packages/server-collector",
     "lint": "echo 'TODO: add eslint/biome'",
-    "test": "echo 'TODO: add tests'",
-    "build": "echo 'TODO: add builds'"
+    "dev:server": "npm run dev -w packages/server-collector"
   }
 }

@@ -1,0 +1,23 @@
+{
+  "name": "@llm-telemetry/log-parser",
+  "version": "0.1.0",
+  "description": "Parse server/CDN logs to measure AI crawler/bot traffic",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "llm-log-parser": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  },
+  "license": "MIT"
+}

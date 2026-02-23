@@ -1,10 +1,197 @@
 {
-  "version": 1,
+  "version": 2,
   "bots": [
-    {"name": "gptbot", "match": [{"type": "ua_contains", "value": "GPTBot"}]},
-    {"name": "openai-user", "match": [{"type": "ua_contains", "value": "OpenAI"}]},
-    {"name": "claudebot", "match": [{"type": "ua_contains", "value": "ClaudeBot"}]},
-    {"name": "perplexitybot", "match": [{"type": "ua_contains", "value": "PerplexityBot"}]},
-    {"name": "google-extended", "match": [{"type": "ua_contains", "value": "Google-Extended"}]}
+    {
+      "name": "gptbot",
+      "operator": "OpenAI",
+      "purpose": "Training data collection for GPT models",
+      "match": [{ "type": "ua_contains", "value": "GPTBot" }]
+    },
+    {
+      "name": "chatgpt-user",
+      "operator": "OpenAI",
+      "purpose": "ChatGPT live browsing (user-initiated)",
+      "match": [{ "type": "ua_contains", "value": "ChatGPT-User" }]
+    },
+    {
+      "name": "oai-searchbot",
+      "operator": "OpenAI",
+      "purpose": "SearchGPT / ChatGPT search feature",
+      "match": [{ "type": "ua_contains", "value": "OAI-SearchBot" }]
+    },
+    {
+      "name": "claudebot",
+      "operator": "Anthropic",
+      "purpose": "Claude training data collection",
+      "match": [{ "type": "ua_contains", "value": "ClaudeBot" }]
+    },
+    {
+      "name": "anthropic-ai",
+      "operator": "Anthropic",
+      "purpose": "Anthropic AI web fetcher",
+      "match": [{ "type": "ua_contains", "value": "anthropic-ai" }]
+    },
+    {
+      "name": "claude-web",
+      "operator": "Anthropic",
+      "purpose": "Claude live browsing (user-initiated)",
+      "match": [{ "type": "ua_contains", "value": "Claude-Web" }]
+    },
+    {
+      "name": "perplexitybot",
+      "operator": "Perplexity AI",
+      "purpose": "Perplexity search index and answer engine",
+      "match": [{ "type": "ua_contains", "value": "PerplexityBot" }]
+    },
+    {
+      "name": "google-extended",
+      "operator": "Google",
+      "purpose": "Gemini / Bard training data collection",
+      "match": [{ "type": "ua_contains", "value": "Google-Extended" }]
+    },
+    {
+      "name": "googleother",
+      "operator": "Google",
+      "purpose": "Google AI experimental crawling",
+      "match": [{ "type": "ua_contains", "value": "GoogleOther" }]
+    },
+    {
+      "name": "amazonbot",
+      "operator": "Amazon",
+      "purpose": "Alexa / Amazon Q data collection",
+      "match": [{ "type": "ua_contains", "value": "Amazonbot" }]
+    },
+    {
+      "name": "bytespider",
+      "operator": "ByteDance / TikTok",
+      "purpose": "TikTok / Douyin AI training data collection",
+      "match": [{ "type": "ua_contains", "value": "Bytespider" }]
+    },
+    {
+      "name": "meta-externalagent",
+      "operator": "Meta",
+      "purpose": "Meta AI training data collection",
+      "match": [{ "type": "ua_contains", "value": "Meta-ExternalAgent" }]
+    },
+    {
+      "name": "meta-externalfetcher",
+      "operator": "Meta",
+      "purpose": "Meta AI live fetching",
+      "match": [{ "type": "ua_contains", "value": "Meta-ExternalFetcher" }]
+    },
+    {
+      "name": "facebookbot",
+      "operator": "Meta",
+      "purpose": "Facebook crawler (AI features)",
+      "match": [{ "type": "ua_contains", "value": "FacebookBot" }]
+    },
+    {
+      "name": "applebot-extended",
+      "operator": "Apple",
+      "purpose": "Apple Intelligence training data",
+      "match": [{ "type": "ua_contains", "value": "Applebot-Extended" }]
+    },
+    {
+      "name": "applebot",
+      "operator": "Apple",
+      "purpose": "Apple search / Siri / Spotlight",
+      "match": [{ "type": "ua_contains", "value": "Applebot" }]
+    },
+    {
+      "name": "youbot",
+      "operator": "You.com",
+      "purpose": "You.com AI search engine crawler",
+      "match": [{ "type": "ua_contains", "value": "YouBot" }]
+    },
+    {
+      "name": "ccbot",
+      "operator": "Common Crawl",
+      "purpose": "Common Crawl dataset (used by many AI labs)",
+      "match": [{ "type": "ua_contains", "value": "CCBot" }]
+    },
+    {
+      "name": "cohere-ai",
+      "operator": "Cohere",
+      "purpose": "Cohere AI training data collection",
+      "match": [{ "type": "ua_contains", "value": "cohere-ai" }]
+    },
+    {
+      "name": "diffbot",
+      "operator": "Diffbot",
+      "purpose": "Diffbot knowledge graph and AI extraction",
+      "match": [{ "type": "ua_contains", "value": "Diffbot" }]
+    },
+    {
+      "name": "bingbot",
+      "operator": "Microsoft",
+      "purpose": "Bing search + Copilot AI features",
+      "match": [{ "type": "ua_contains", "value": "bingbot" }]
+    },
+    {
+      "name": "semrushbot",
+      "operator": "Semrush",
+      "purpose": "SEO data collection (AI-adjacent tooling)",
+      "match": [{ "type": "ua_contains", "value": "SemrushBot" }]
+    },
+    {
+      "name": "ahrefsbot",
+      "operator": "Ahrefs",
+      "purpose": "SEO data collection (AI-adjacent tooling)",
+      "match": [{ "type": "ua_contains", "value": "AhrefsBot" }]
+    },
+    {
+      "name": "dataforseobot",
+      "operator": "DataForSEO",
+      "purpose": "SEO API data collection",
+      "match": [{ "type": "ua_contains", "value": "DataForSeoBot" }]
+    },
+    {
+      "name": "deepseekbot",
+      "operator": "DeepSeek",
+      "purpose": "DeepSeek AI training data collection",
+      "match": [{ "type": "ua_contains", "value": "Deepseek" }]
+    },
+    {
+      "name": "grokbot",
+      "operator": "xAI",
+      "purpose": "Grok / xAI training data collection",
+      "match": [{ "type": "ua_contains", "value": "xAI" }]
+    },
+    {
+      "name": "iaskbot",
+      "operator": "iAsk",
+      "purpose": "iAsk AI search crawler",
+      "match": [{ "type": "ua_contains", "value": "iaskspider" }]
+    },
+    {
+      "name": "phindbot",
+      "operator": "Phind",
+      "purpose": "Phind AI code search crawler",
+      "match": [{ "type": "ua_contains", "value": "PhindBot" }]
+    },
+    {
+      "name": "kagibot",
+      "operator": "Kagi",
+      "purpose": "Kagi search engine AI assistant",
+      "match": [{ "type": "ua_contains", "value": "KagiBot" }]
+    },
+    {
+      "name": "timpibot",
+      "operator": "Timpi",
+      "purpose": "Timpi decentralized search engine",
+      "match": [{ "type": "ua_contains", "value": "Timpibot" }]
+    },
+    {
+      "name": "velenpublicwebcrawler",
+      "operator": "Velen",
+      "purpose": "Velen AI web crawler",
+      "match": [{ "type": "ua_contains", "value": "VelenPublicWebCrawler" }]
+    },
+    {
+      "name": "webzio-extended",
+      "operator": "Webz.io",
+      "purpose": "Webz.io AI data pipeline crawler",
+      "match": [{ "type": "ua_contains", "value": "Webzio-Extended" }]
+    }
   ]
 }

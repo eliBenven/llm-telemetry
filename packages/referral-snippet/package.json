@@ -1,0 +1,15 @@
+{
+  "name": "@llm-telemetry/referral-snippet",
+  "version": "0.1.0",
+  "description": "Drop-in JS snippet to track AI-referred human traffic",
+  "main": "dist/snippet.js",
+  "scripts": {
+    "build": "node src/build.mjs",
+    "dev": "node src/build.mjs --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.0",
+    "typescript": "^5.4.0"
+  },
+  "license": "MIT"
+}

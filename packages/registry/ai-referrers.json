@@ -1,10 +1,146 @@
 {
-  "version": 1,
+  "version": 2,
   "sources": [
-    {"name": "chatgpt", "match": [{"type": "domain", "value": "chat.openai.com"}, {"type": "domain", "value": "chatgpt.com"}]},
-    {"name": "perplexity", "match": [{"type": "domain", "value": "www.perplexity.ai"}]},
-    {"name": "gemini", "match": [{"type": "domain", "value": "gemini.google.com"}]},
-    {"name": "copilot", "match": [{"type": "domain", "value": "copilot.microsoft.com"}]},
-    {"name": "claude", "match": [{"type": "domain", "value": "claude.ai"}]}
+    {
+      "name": "chatgpt",
+      "operator": "OpenAI",
+      "match": [
+        { "type": "domain", "value": "chat.openai.com" },
+        { "type": "domain", "value": "chatgpt.com" }
+      ]
+    },
+    {
+      "name": "searchgpt",
+      "operator": "OpenAI",
+      "match": [
+        { "type": "domain", "value": "search.chatgpt.com" }
+      ]
+    },
+    {
+      "name": "perplexity",
+      "operator": "Perplexity AI",
+      "match": [
+        { "type": "domain", "value": "www.perplexity.ai" },
+        { "type": "domain", "value": "perplexity.ai" }
+      ]
+    },
+    {
+      "name": "gemini",
+      "operator": "Google",
+      "match": [
+        { "type": "domain", "value": "gemini.google.com" }
+      ]
+    },
+    {
+      "name": "google-ai-overview",
+      "operator": "Google",
+      "match": [
+        { "type": "domain_path", "value": "google.com/search", "param": "udm", "paramValue": "14" }
+      ]
+    },
+    {
+      "name": "copilot",
+      "operator": "Microsoft",
+      "match": [
+        { "type": "domain", "value": "copilot.microsoft.com" },
+        { "type": "domain", "value": "www.bing.com/chat" }
+      ]
+    },
+    {
+      "name": "bing-copilot",
+      "operator": "Microsoft",
+      "match": [
+        { "type": "domain_path", "value": "bing.com/chat" }
+      ]
+    },
+    {
+      "name": "claude",
+      "operator": "Anthropic",
+      "match": [
+        { "type": "domain", "value": "claude.ai" }
+      ]
+    },
+    {
+      "name": "you",
+      "operator": "You.com",
+      "match": [
+        { "type": "domain", "value": "you.com" },
+        { "type": "domain", "value": "www.you.com" }
+      ]
+    },
+    {
+      "name": "phind",
+      "operator": "Phind",
+      "match": [
+        { "type": "domain", "value": "www.phind.com" },
+        { "type": "domain", "value": "phind.com" }
+      ]
+    },
+    {
+      "name": "kagi",
+      "operator": "Kagi",
+      "match": [
+        { "type": "domain", "value": "kagi.com" },
+        { "type": "domain", "value": "www.kagi.com" }
+      ]
+    },
+    {
+      "name": "brave-ai",
+      "operator": "Brave",
+      "match": [
+        { "type": "domain", "value": "search.brave.com" }
+      ]
+    },
+    {
+      "name": "deepseek",
+      "operator": "DeepSeek",
+      "match": [
+        { "type": "domain", "value": "chat.deepseek.com" },
+        { "type": "domain", "value": "deepseek.com" }
+      ]
+    },
+    {
+      "name": "grok",
+      "operator": "xAI",
+      "match": [
+        { "type": "domain", "value": "x.ai" },
+        { "type": "domain", "value": "grok.x.ai" }
+      ]
+    },
+    {
+      "name": "huggingchat",
+      "operator": "Hugging Face",
+      "match": [
+        { "type": "domain", "value": "huggingface.co/chat" }
+      ]
+    },
+    {
+      "name": "iask",
+      "operator": "iAsk",
+      "match": [
+        { "type": "domain", "value": "iask.ai" }
+      ]
+    },
+    {
+      "name": "andi",
+      "operator": "Andi Search",
+      "match": [
+        { "type": "domain", "value": "andisearch.com" }
+      ]
+    },
+    {
+      "name": "exa",
+      "operator": "Exa",
+      "match": [
+        { "type": "domain", "value": "exa.ai" }
+      ]
+    },
+    {
+      "name": "mistral-le-chat",
+      "operator": "Mistral AI",
+      "match": [
+        { "type": "domain", "value": "chat.mistral.ai" }
+      ]
+    }
   ]
 }

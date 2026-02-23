@@ -1,49 +1,129 @@
 # llm-telemetry
 
-**This project tracks AI traffic + analytics for any site.**
+**Track AI traffic and analytics for any site.**
 
 That means **both**:
-1) **AI crawlers/bots** hitting your site (GPTBot, ClaudeBot, PerplexityBot, etc.)
-2) **Human visits + conversions referred by AI tools** (ChatGPT, Perplexity, Gemini, Copilot, Claude, etc.)
+1. **AI crawlers/bots** hitting your site (GPTBot, ClaudeBot, PerplexityBot, Bytespider, etc.)
+2. **Human visits + conversions referred by AI tools** (ChatGPT, Perplexity, Gemini, Copilot, Claude, DeepSeek, etc.)
 
-The goal is simple: *answer “What did AI send me?” and “What did AI crawl?” with hard numbers.*
+The goal: *answer "What did AI send me?" and "What did AI crawl?" with hard numbers.*
 
-## What you get
-### AI Referrals (humans)
-- drop-in JS snippet (or npm package)
-- classifies referrers + UTMs
-- captures pageviews + conversions
-- exports to PostHog / GA4 / Segment / webhook / your DB
+## Architecture
 
-### AI Crawlers (bots)
-- log parsers for common platforms (nginx/apache/CloudFront/Vercel/etc.)
-- bot/user-agent classification
-- page hit counts, cadence, status codes
-- export to BigQuery/Snowflake/ClickHouse/CSV
+```
+packages/
+  registry/          AI bot + referrer classification data + matching functions
+  referral-snippet/  Drop-in <script> tag for tracking AI-referred human traffic
+  log-parser/        CLI to parse nginx/CloudFront logs and classify bot traffic
+  server-collector/  Express server: /ingest endpoint + /r/:code shortlink redirects
+  collector-config/  Docker Compose stack: Grafana + Prometheus + Tempo + OTel Collector
+```
 
-## Reality / constraints (we’re honest about attribution)
+## Quickstart
+
+### Install
+
+```bash
+npm install
+```
+
+### Build everything
+
+```bash
+npm run build
+```
+
+### Run tests
+
+```bash
+npm test
+```
+
+### Start the server collector (dev)
+
+```bash
+npm run dev:server
+# Listening on http://localhost:3456
+```
+
+## Packages
+
+### @llm-telemetry/registry
+
+Maintained registry of 30+ AI bots and 19 AI referrer sources. Exposes classification functions:
+
+```ts
+import { classifyBot, classifyReferrer } from "@llm-telemetry/registry";
+
+classifyBot("GPTBot/1.0");
+// { isBot: true, name: "gptbot", operator: "OpenAI", purpose: "Training data collection..." }
+
+classifyReferrer("https://chatgpt.com/");
+// { isAIReferrer: true, name: "chatgpt", operator: "OpenAI" }
+```
+
+### @llm-telemetry/referral-snippet
+
+Drop-in `<script>` tag that detects AI referral traffic and beacons events to your endpoint:
+
+```html
+<script src="https://cdn.example.com/snippet.js"
+  data-endpoint="https://yoursite.com/api/ingest"
+  data-site-id="my-site">
+</script>
+```
+
+Emits `ai_pageview` on load. Exposes `__llmTelemetry.trackConversion(name, value)` for conversions.
+
+### @llm-telemetry/log-parser
+
+CLI tool to parse server logs and produce AI bot traffic aggregates:
+
+```bash
+npx llm-log-parser parse access.log --format nginx --output csv
+npx llm-log-parser parse cloudfront.log --format cloudfront --output json --bots-only
+```
+
+### @llm-telemetry/server-collector
+
+Express server with:
+- `POST /ingest` -- receive beacon events from the snippet
+- `GET /events` -- query stored events
+- `GET /r/:code` -- redirect shortlinks with first-party cookie + UTMs
+- `POST /shortlinks` -- create shortlinks
+- `GET /health` -- health check
+
+Supports memory (default) and SQLite storage backends.
+
+### collector-config
+
+Docker Compose stack for observability:
+
+```bash
+cd packages/collector-config
+docker compose up
+```
+
+- Grafana: http://localhost:3000 (admin/admin)
+- Prometheus: http://localhost:9090
+- Tempo: http://localhost:3200
+
+## Reality / constraints (we're honest about attribution)
+
 - Some AI tools strip referrers. For high-confidence attribution, we support:
   - UTM conventions
-  - optional redirect/shortlink endpoint
-  - server-side log correlation
+  - Optional redirect/shortlink endpoint (`/r/:code`)
+  - Server-side log correlation
 
-## Success conditions (v1)
-You can do all of the following:
-1. Install in <10 minutes on any site (static/Next.js/Webflow/Shopify).
-2. See a dashboard with:
-   - AI referrals by source → landing pages → conversions
-   - AI crawler hits by bot → pages → status codes
-3. Export data to a destination you already use (PostHog/GA4/BigQuery/CSV).
+## Contributing
 
-## Quickstart (local)
-(TODO) we’ll ship a one-command demo that generates sample traffic and shows dashboards.
+To add a new bot or referrer:
 
-## Repo layout (planned)
-- `packages/referral-snippet` — JS snippet + classification
-- `packages/server-collector` — API endpoint for ingest + redirect/shortlinks (optional)
-- `packages/log-parser` — parse + classify from server/CDN logs
-- `packages/registry` — maintained registry of AI bots + AI referrer patterns
-- `examples/*` — Next.js + static examples
+1. Add the entry to `packages/registry/ai-bots.json` or `packages/registry/ai-referrers.json`
+2. Add a test case in `packages/registry/__tests__/registry.test.ts`
+3. Run `npm test` to verify
+4. Submit a PR
 
 ## License
+
 MIT
