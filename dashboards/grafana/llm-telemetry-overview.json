@@ -1,18 +1,445 @@
 {
-  "title": "LLM Telemetry Overview (stub)",
-  "tags": ["llm", "otel"],
+  "title": "LLM Telemetry Overview",
+  "uid": "llm-telemetry-overview",
+  "tags": ["llm", "ai-traffic", "telemetry"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "site_id",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(llmt_ingest_events_total, site_id)",
+        "query": "label_values(llmt_ingest_events_total, site_id)",
+        "includeAll": true,
+        "allValue": ".*",
+        "current": { "text": "All", "value": "$__all" },
+        "refresh": 2
+      }
+    ]
+  },
   "panels": [
     {
-      "type": "text",
-      "title": "Dashboard stub",
-      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 6},
+      "type": "row",
+      "title": "Overview",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Total AI Events",
+      "description": "Total ingest events received from AI sources",
+      "gridPos": { "x": 0, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(llmt_ingest_events_total{site_id=~\"$site_id\"})",
+          "legendFormat": "Total Events"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "blue" },
+              { "value": 100, "color": "green" },
+              { "value": 1000, "color": "orange" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "type": "stat",
+      "title": "Unique AI Sources",
+      "description": "Number of distinct AI sources sending traffic",
+      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "count(count by (source) (llmt_ingest_events_total{site_id=~\"$site_id\", source!=\"unknown\"}))",
+          "legendFormat": "Sources"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "purple" },
+              { "value": 5, "color": "blue" },
+              { "value": 10, "color": "green" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "type": "stat",
+      "title": "Shortlink Clicks",
+      "description": "Total shortlink redirect clicks",
+      "gridPos": { "x": 12, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(llmt_shortlink_clicks_total) or vector(0)",
+          "legendFormat": "Clicks"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "yellow" },
+              { "value": 50, "color": "green" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "type": "stat",
+      "title": "Events Stored",
+      "description": "Current events in storage",
+      "gridPos": { "x": 18, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "llmt_events_stored_total",
+          "legendFormat": "Stored"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "text" },
+              { "value": 10000, "color": "orange" },
+              { "value": 100000, "color": "red" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto" }
+    },
+
+    {
+      "type": "row",
+      "title": "AI Traffic by Source",
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Events Over Time by Source",
+      "description": "AI referral events broken down by source (ChatGPT, Perplexity, etc.)",
+      "gridPos": { "x": 0, "y": 6, "w": 16, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (source) (rate(llmt_ingest_events_total{site_id=~\"$site_id\", source!=\"unknown\"}[5m]))",
+          "legendFormat": "{{ source }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "mode": "none" }
+          }
+        }
+      },
       "options": {
-        "content": "This is a placeholder dashboard. Next: add PromQL panels for latency, token usage, cost, errors by provider/model/feature.",
-        "mode": "markdown"
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["sum", "lastNotNull"] }
+      }
+    },
+    {
+      "type": "piechart",
+      "title": "Traffic Share by Operator",
+      "description": "Share of AI traffic by operator (OpenAI, Anthropic, Google, etc.)",
+      "gridPos": { "x": 16, "y": 6, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (operator) (llmt_ingest_events_total{site_id=~\"$site_id\", operator!=\"unknown\"})",
+          "legendFormat": "{{ operator }}"
+        }
+      ],
+      "options": {
+        "pieType": "donut",
+        "tooltip": { "mode": "single" },
+        "legend": { "displayMode": "table", "placement": "bottom", "values": ["value", "percent"] }
+      }
+    },
+
+    {
+      "type": "row",
+      "title": "Event Breakdown",
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "bargauge",
+      "title": "Top Sources (All Time)",
+      "description": "Ranked AI sources by total events",
+      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (source) (llmt_ingest_events_total{site_id=~\"$site_id\", source!=\"unknown\"}))",
+          "legendFormat": "{{ source }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "blue" },
+              { "value": 50, "color": "green" },
+              { "value": 500, "color": "orange" }
+            ]
+          }
+        }
+      },
+      "options": { "displayMode": "gradient", "orientation": "horizontal", "showUnfilled": true }
+    },
+    {
+      "type": "piechart",
+      "title": "Event Types",
+      "description": "Breakdown of event types (pageview vs conversion vs custom)",
+      "gridPos": { "x": 12, "y": 15, "w": 6, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (event_type) (llmt_ingest_events_total{site_id=~\"$site_id\"})",
+          "legendFormat": "{{ event_type }}"
+        }
+      ],
+      "options": {
+        "pieType": "donut",
+        "legend": { "displayMode": "list", "placement": "right" }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Conversion Events",
+      "description": "Total ai_conversion events",
+      "gridPos": { "x": 18, "y": 15, "w": 6, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(llmt_ingest_events_total{event_type=\"ai_conversion\", site_id=~\"$site_id\"}) or vector(0)",
+          "legendFormat": "Conversions"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "text" },
+              { "value": 1, "color": "green" },
+              { "value": 100, "color": "super-light-green" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "textMode": "value_and_name" }
+    },
+
+    {
+      "type": "row",
+      "title": "Shortlinks",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Shortlink Clicks Over Time",
+      "description": "Shortlink redirect clicks over time",
+      "gridPos": { "x": 0, "y": 23, "w": 12, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (code) (rate(llmt_shortlink_clicks_total[5m]))",
+          "legendFormat": "{{ code }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": { "mode": "normal" }
+          }
+        }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Shortlink Performance",
+      "description": "Total clicks per shortlink code",
+      "gridPos": { "x": 12, "y": 23, "w": 12, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (code) (llmt_shortlink_clicks_total))",
+          "legendFormat": "{{ code }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "yellow" },
+              { "value": 10, "color": "green" }
+            ]
+          }
+        }
+      },
+      "options": { "displayMode": "gradient", "orientation": "horizontal" }
+    },
+
+    {
+      "type": "row",
+      "title": "Collector Health",
+      "gridPos": { "x": 0, "y": 29, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP Request Rate",
+      "description": "Requests per second to the collector, by route",
+      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (route) (rate(llmt_http_requests_total{route!=\"/metrics\"}[1m]))",
+          "legendFormat": "{{ route }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Latency (p50 / p95 / p99)",
+      "description": "HTTP request latency percentiles",
+      "gridPos": { "x": 12, "y": 30, "w": 12, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(llmt_http_request_duration_seconds_bucket{route!=\"/metrics\"}[5m])))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(llmt_http_request_duration_seconds_bucket{route!=\"/metrics\"}[5m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(llmt_http_request_duration_seconds_bucket{route!=\"/metrics\"}[5m])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate (4xx / 5xx)",
+      "description": "HTTP error responses over time",
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(llmt_http_requests_total{status_code=~\"4..\"}[1m]))",
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "sum(rate(llmt_http_requests_total{status_code=~\"5..\"}[1m]))",
+          "legendFormat": "5xx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "lineWidth": 2
+          },
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "4xx" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "5xx" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Ingest Payload Volume",
+      "description": "Total bytes ingested",
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(llmt_ingest_bytes_total) or vector(0)",
+          "legendFormat": "Bytes"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 1048576, "color": "yellow" },
+              { "value": 10485760, "color": "orange" }
+            ]
+          },
+          "min": 0,
+          "max": 10485760
+        }
       }
     }
   ]

@@ -1,0 +1,11 @@
+FROM node:20-slim
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY packages/server-collector/package.json packages/server-collector/
+COPY packages/registry/package.json packages/registry/
+RUN npm ci --workspace=packages/server-collector --workspace=packages/registry --ignore-scripts
+COPY packages/server-collector packages/server-collector
+COPY packages/registry packages/registry
+RUN npm run build -w packages/server-collector
+EXPOSE 3456
+CMD ["node", "packages/server-collector/dist/index.js"]

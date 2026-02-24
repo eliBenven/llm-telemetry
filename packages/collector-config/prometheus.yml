@@ -5,3 +5,8 @@ scrape_configs:
   - job_name: otelcol
     static_configs:
       - targets: ["otelcol:9464"]
+
+  - job_name: server-collector
+    static_configs:
+      - targets: ["server-collector:3456"]
+    metrics_path: /metrics

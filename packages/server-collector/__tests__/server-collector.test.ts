@@ -1,6 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { MemoryStorage } from "../src/storage";
 import { createShortlink, resolveShortlink, listShortlinks } from "../src/shortlinks";
+import { createApp } from "../src/index";
+import { register } from "../src/metrics";
+import type { Express } from "express";
+import http from "http";
 
 // ── MemoryStorage ────────────────────────────────────────────────────
 
@@ -162,5 +166,115 @@ describe("shortlinks", () => {
 
     const links = listShortlinks(store);
     expect(links).toHaveLength(2);
+  });
+});
+
+// ── Metrics + HTTP integration ───────────────────────────────────────
+
+describe("metrics endpoint", () => {
+  let app: Express;
+  let server: http.Server;
+  let baseUrl: string;
+
+  beforeEach(async () => {
+    // Reset metrics between tests
+    register.resetMetrics();
+
+    const store = new MemoryStorage();
+    app = createApp(store);
+    server = app.listen(0); // random available port
+    const addr = server.address() as { port: number };
+    baseUrl = `http://localhost:${addr.port}`;
+  });
+
+  afterEach(() => {
+    server.close();
+  });
+
+  it("exposes /metrics endpoint with Prometheus format", async () => {
+    const res = await fetch(`${baseUrl}/metrics`);
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    // Should contain our custom metrics
+    expect(text).toContain("llmt_ingest_events_total");
+    expect(text).toContain("llmt_http_requests_total");
+    expect(text).toContain("llmt_http_request_duration_seconds");
+    expect(text).toContain("llmt_shortlink_clicks_total");
+    expect(text).toContain("llmt_events_stored_total");
+  });
+
+  it("increments ingest counter on POST /ingest", async () => {
+    await fetch(`${baseUrl}/ingest`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event: "ai_pageview",
+        source: "chatgpt",
+        operator: "OpenAI",
+        siteId: "test-site",
+      }),
+    });
+
+    const res = await fetch(`${baseUrl}/metrics`);
+    const text = await res.text();
+    // Default labels include service="llm-telemetry-collector"
+    expect(text).toContain('event_type="ai_pageview"');
+    expect(text).toContain('source="chatgpt"');
+    expect(text).toContain('operator="OpenAI"');
+    expect(text).toContain('site_id="test-site"');
+  });
+
+  it("increments shortlink clicks counter on redirect", async () => {
+    // Create a shortlink first
+    await fetch(`${baseUrl}/shortlinks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        targetUrl: "https://example.com",
+        code: "metrics-test",
+        utmSource: "chatgpt",
+      }),
+    });
+
+    // Follow the redirect (fetch follows by default, so use redirect: manual)
+    await fetch(`${baseUrl}/r/metrics-test`, { redirect: "manual" });
+
+    const res = await fetch(`${baseUrl}/metrics`);
+    const text = await res.text();
+    expect(text).toContain('code="metrics-test"');
+    expect(text).toContain('utm_source="chatgpt"');
+    expect(text).toContain("llmt_shortlink_clicks_total");
+  });
+
+  it("tracks HTTP request metrics", async () => {
+    await fetch(`${baseUrl}/health`);
+    await fetch(`${baseUrl}/events`);
+
+    const res = await fetch(`${baseUrl}/metrics`);
+    const text = await res.text();
+    expect(text).toContain('route="/health"');
+    expect(text).toContain('route="/events"');
+    expect(text).toContain('status_code="200"');
+    expect(text).toContain("llmt_http_requests_total");
+  });
+
+  it("records events_stored gauge", async () => {
+    // Insert a few events
+    for (let i = 0; i < 3; i++) {
+      await fetch(`${baseUrl}/ingest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "ai_pageview", source: "test" }),
+      });
+    }
+
+    const res = await fetch(`${baseUrl}/metrics`);
+    const text = await res.text();
+    // Gauge value includes default labels
+    expect(text).toContain("llmt_events_stored_total");
+    // Match the gauge value (with service label)
+    const match = text.match(/llmt_events_stored_total\{[^}]+\}\s+(\d+)/);
+    expect(match).not.toBeNull();
+    expect(parseInt(match![1], 10)).toBeGreaterThanOrEqual(3);
   });
 });

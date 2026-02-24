@@ -2,6 +2,16 @@ import express from "express";
 import { MemoryStorage, SqliteStorage } from "./storage";
 import type { StorageAdapter, IngestEvent } from "./storage";
 import { createShortlink, resolveShortlink, listShortlinks } from "./shortlinks";
+import {
+  register,
+  ingestEventsTotal,
+  ingestBytesTotal,
+  shortlinkClicksTotal,
+  shortlinksCreatedTotal,
+  httpRequestsTotal,
+  httpRequestDuration,
+  eventsStoredGauge,
+} from "./metrics";
 
 // ── Config ───────────────────────────────────────────────────────────
 
@@ -22,6 +32,18 @@ function createStorageInstance(): StorageAdapter {
   return new MemoryStorage();
 }
 
+// ── Route label helper ───────────────────────────────────────────────
+
+function routeLabel(path: string): string {
+  if (path === "/ingest") return "/ingest";
+  if (path === "/events") return "/events";
+  if (path === "/health") return "/health";
+  if (path === "/metrics") return "/metrics";
+  if (path === "/shortlinks") return "/shortlinks";
+  if (path.startsWith("/r/")) return "/r/:code";
+  return "other";
+}
+
 // ── App ──────────────────────────────────────────────────────────────
 
 export function createApp(storage?: StorageAdapter) {
@@ -40,6 +62,37 @@ export function createApp(storage?: StorageAdapter) {
       return res.sendStatus(204);
     }
     next();
+  });
+
+  // ── HTTP metrics middleware ──────────────────────────────────────
+
+  app.use((req, res, next) => {
+    const end = httpRequestDuration.startTimer({
+      method: req.method,
+      route: routeLabel(req.path),
+    });
+
+    res.on("finish", () => {
+      end();
+      httpRequestsTotal.inc({
+        method: req.method,
+        route: routeLabel(req.path),
+        status_code: String(res.statusCode),
+      });
+    });
+
+    next();
+  });
+
+  // ── GET /metrics — Prometheus scrape endpoint ───────────────────
+
+  app.get("/metrics", async (_req, res) => {
+    // Update the stored-events gauge before scrape
+    const events = store.getEvents();
+    eventsStoredGauge.set(events.length);
+
+    res.set("Content-Type", register.contentType);
+    res.end(await register.metrics());
   });
 
   // ── Health check ─────────────────────────────────────────────────
@@ -69,6 +122,19 @@ export function createApp(storage?: StorageAdapter) {
     };
 
     store.insertEvent(event);
+
+    // Record metrics
+    ingestEventsTotal.inc({
+      event_type: event.event,
+      source: event.source,
+      operator: event.operator || "unknown",
+      site_id: event.siteId || "unknown",
+    });
+    const payloadSize = req.headers["content-length"];
+    if (payloadSize) {
+      ingestBytesTotal.inc(parseInt(payloadSize, 10));
+    }
+
     res.status(202).json({ accepted: true });
   });
 
@@ -88,6 +154,12 @@ export function createApp(storage?: StorageAdapter) {
     if (!result) {
       return res.status(404).json({ error: "Shortlink not found" });
     }
+
+    // Record metrics
+    shortlinkClicksTotal.inc({
+      code: result.link.code,
+      utm_source: result.link.utmSource || "none",
+    });
 
     // Set first-party attribution cookie
     res.cookie(COOKIE_NAME, result.link.utmSource || result.link.code, {
@@ -113,6 +185,7 @@ export function createApp(storage?: StorageAdapter) {
       utmMedium,
       utmCampaign,
     });
+    shortlinksCreatedTotal.inc();
     res.status(201).json(link);
   });
 
@@ -137,6 +210,7 @@ if (require.main === module) {
     console.log(`  GET  /r/:code      - redirect shortlink`);
     console.log(`  POST /shortlinks   - create shortlink`);
     console.log(`  GET  /shortlinks   - list shortlinks`);
+    console.log(`  GET  /metrics      - Prometheus metrics`);
     console.log(`  GET  /health       - health check`);
   });
 }

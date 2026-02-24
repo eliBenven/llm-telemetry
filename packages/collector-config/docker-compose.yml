@@ -1,4 +1,16 @@
 services:
+  # ── LLM Telemetry server-collector ─────────────────────────────────
+  server-collector:
+    build:
+      context: ../..
+      dockerfile: packages/collector-config/Dockerfile.collector
+    ports:
+      - "3456:3456"
+    environment:
+      - STORAGE=memory
+      - PORT=3456
+
+  # ── Observability stack ────────────────────────────────────────────
   tempo:
     image: grafana/tempo:latest
     command: ["-config.file=/etc/tempo.yaml"]

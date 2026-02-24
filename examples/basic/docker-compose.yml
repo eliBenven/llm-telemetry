@@ -1,0 +1,49 @@
+# Full llm-telemetry stack: collector + observability + demo page
+#
+# Usage:
+#   docker compose up --build
+#
+# Then open:
+#   Demo page:  http://localhost:8080
+#   Grafana:    http://localhost:3000 (admin/admin)
+#   Prometheus: http://localhost:9090
+#   Collector:  http://localhost:3456/health
+
+services:
+  # ── Collector server ─────────────────────────────────────────────
+  server-collector:
+    build:
+      context: ../..
+      dockerfile: packages/collector-config/Dockerfile.collector
+    ports:
+      - "3456:3456"
+    environment:
+      - STORAGE=memory
+      - PORT=3456
+
+  # ── Demo page (static HTML served by nginx) ─────────────────────
+  demo-page:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./demo.js:/usr/share/nginx/html/demo.js:ro
+
+  # ── Observability ───────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ../../packages/collector-config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ../../packages/collector-config/grafana/provisioning:/etc/grafana/provisioning
+      - ../../dashboards/grafana:/var/lib/grafana/dashboards
